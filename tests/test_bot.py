@@ -19,7 +19,8 @@ class DailyReportTests(unittest.TestCase):
         items = feed_items(xml)
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0]["title"], "Example headline")
-        self.assertEqual(items[0]["link"], "https://example.com/story")
+        self.assertEqual(items[0]["source"], "Example")
+        self.assertIn("Example headline", items[0]["title"])
 
     def test_menu_has_three_core_functions(self):
         keyboard = menu()
