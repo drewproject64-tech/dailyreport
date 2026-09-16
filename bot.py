@@ -206,7 +206,7 @@ async def search_headlines(query: str) -> tuple[str, InlineKeyboardMarkup]:
     url = f"https://news.google.com/rss/search?q={encoded}&hl=en&gl=US&ceid=US:en"
     try:
         items = await fetch_feed(url, 7)
-    except Exception as exc:
+    except (OSError, ET.ParseError, ValueError) as exc:
         logger.warning("Search failed: %s", exc)
         items = []
 
