@@ -54,11 +54,6 @@ def menu() -> InlineKeyboardMarkup:
     )
 
 
-def navigation() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="🏠 Main Menu", callback_data="home")]]
-    )
-
 
 def topics_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
@@ -93,10 +88,14 @@ def feed_items(xml_data: bytes, limit: int = 5) -> list[dict[str, str]]:
         title = (item.findtext("title") or "").strip()
         link = (item.findtext("link") or "").strip()
         source = (item.findtext("source") or "BBC").strip()
+        description = html.unescape((item.findtext("description") or "").strip())
+        description = " ".join(description.replace("<p>", " ").replace("</p>", " ").split())
         if title and link:
-            items.append(
-                {"title": html.unescape(title), "source": source}
-            )
+            items.append({
+                "title": html.unescape(title),
+                "source": source,
+                "summary": description[:320],
+            })
     return items
 
 
@@ -136,7 +135,11 @@ def content_navigation() -> InlineKeyboardMarkup:
 def format_items(items: list[dict[str, str]]) -> str:
     lines = []
     for index, item in enumerate(items, 1):
-        lines.append(f"{index}. {item['title']}\n   {item['source']}")
+        summary = item.get("summary", "").strip()
+        if summary:
+            lines.append(f"{index}. {item['title']}\n{summary}\nSource: {item['source']}")
+        else:
+            lines.append(f"{index}. {item['title']}\nSource: {item['source']}")
     return "\n\n".join(lines)
 
 
@@ -220,7 +223,7 @@ async def search_headlines(query: str) -> tuple[str, InlineKeyboardMarkup]:
 
     return (
         f"🔎 Search Headlines\n\nResults for “{clean}”:\n\n{format_items(items)}",
-        headline_keyboard(items),
+        content_navigation(),
     )
 
 
