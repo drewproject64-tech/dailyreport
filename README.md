@@ -81,6 +81,6 @@ Before advertising, manually verify:
 - Invalid/empty search input is handled.
 - Every button responds.
 - Main Menu returns to the start screen.
-- Source buttons open the corresponding article.
+- News is displayed directly inside Telegram; no user-facing external article links are provided.
 - Bot works from Telegram mobile and desktop.
 - Render starts without exceptions.
