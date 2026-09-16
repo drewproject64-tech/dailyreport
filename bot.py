@@ -95,7 +95,7 @@ def feed_items(xml_data: bytes, limit: int = 5) -> list[dict[str, str]]:
         source = (item.findtext("source") or "BBC").strip()
         if title and link:
             items.append(
-                {"title": html.unescape(title), "link": link, "source": source}
+                {"title": html.unescape(title), "source": source}
             )
     return items
 
@@ -123,13 +123,14 @@ async def fetch_topic(topic: str, limit: int = 5) -> list[dict[str, str]]:
         return []
 
 
-def headline_keyboard(items: list[dict[str, str]]) -> InlineKeyboardMarkup:
-    buttons = [
-        [InlineKeyboardButton(text=f"Read: {item['title'][:48]}", url=item["link"])]
-        for item in items
-    ]
-    buttons.append([InlineKeyboardButton(text="🏠 Main Menu", callback_data="home")])
-    return InlineKeyboardMarkup(inline_keyboard=buttons)
+def content_navigation() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📰 Daily Brief", callback_data="daily")],
+            [InlineKeyboardButton(text="📚 Topics", callback_data="topics")],
+            [InlineKeyboardButton(text="🔎 Search", callback_data="search")],
+        ]
+    )
 
 
 def format_items(items: list[dict[str, str]]) -> str:
@@ -167,8 +168,8 @@ async def daily_brief() -> tuple[str, InlineKeyboardMarkup]:
     lines = [f"📰 Daily Brief — {date_text}", ""]
     for topic, item in all_items[:10]:
         lines.append(f"• {TOPIC_NAMES[topic]}: {item['title']}")
-    lines.extend(["", "Select a headline below to open its source."])
-    return "\n".join(lines), headline_keyboard([item for _, item in all_items[:10]])
+    lines.extend(["", "All report content is displayed directly inside Telegram."])
+    return "\n".join(lines), content_navigation()
 
 
 async def show_topic(topic: str) -> tuple[str, InlineKeyboardMarkup]:
@@ -191,7 +192,7 @@ async def show_topic(topic: str) -> tuple[str, InlineKeyboardMarkup]:
         )
 
     text = f"📚 {name} Brief\n\n{format_items(items)}"
-    return text, headline_keyboard(items)
+    return text, content_navigation()
 
 
 async def search_headlines(query: str) -> tuple[str, InlineKeyboardMarkup]:
@@ -226,7 +227,7 @@ async def search_headlines(query: str) -> tuple[str, InlineKeyboardMarkup]:
 def welcome_text() -> str:
     return (
         "Welcome to Daily Report.\n\n"
-        "Get current headlines in three simple ways:\n"
+        "Get current news and updates directly inside Telegram:\n"
         "• Daily Brief — a quick overview across topics.\n"
         "• Topic Brief — focused headlines by category.\n"
         "• Search Headlines — find recent headlines by keyword.\n\n"
